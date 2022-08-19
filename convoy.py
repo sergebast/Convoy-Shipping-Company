@@ -25,7 +25,20 @@ def xlsx_to_csv(_file: str, _file_name: str) -> int:
     return my_df.shape[0]
 
 
-file = input('Input file name\n')
+def lines_message(_lines: int, _file_name: str) -> str:
+    """
+    Message about the number of added lines
+    :param _lines: The number of lines added
+    :param _file_name: The filename without extension and CHECKED marker
+    :return: Message about the number of added lines
+    """
+    message = f'{_lines} lines were added to {_file_name}.csv'
+    if _lines == 1:
+        message = f'1 line was added to {_file_name}.csv'
+    print(message)
+
+
+# file = input('Input file name\n')
 # # file_name = ''
 #
 # if file.endswith('.xlsx'):
@@ -78,4 +91,3 @@ file = input('Input file name\n')
 #
 # conn = sql.connect(f'{file_name}.s3db')
 # cursor_name = conn.cursor()
-print(xlsx_to_csv(file, file_name(file)))
