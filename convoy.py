@@ -13,6 +13,18 @@ def file_name(_file: str) -> str:
     return _file.removesuffix('.csv').removesuffix('.xlsx').removesuffix('[CHECKED]')
 
 
+def xlsx_to_csv(_file: str, _file_name: str) -> int:
+    """
+    Will convert .xlsx to .csv file
+    :param _file: Entered file name
+    :param _file_name: The filename without extension and CHECKED marker
+    :return: The number of lines added
+    """
+    my_df = pd.read_excel(f'{_file}', sheet_name='Vehicles', dtype=str)
+    my_df.to_csv(f'{_file_name}.csv', index=None, header=True)
+    return my_df.shape[0]
+
+
 file = input('Input file name\n')
 # # file_name = ''
 #
@@ -66,3 +78,4 @@ file = input('Input file name\n')
 #
 # conn = sql.connect(f'{file_name}.s3db')
 # cursor_name = conn.cursor()
+print(xlsx_to_csv(file, file_name(file)))
