@@ -15,7 +15,7 @@ def file_name(_file: str) -> str:
 
 def xlsx_to_csv(_file: str, _file_name: str) -> int:
     """
-    Will convert .xlsx to .csv file
+    Will convert .xlsx to .csv file and return the number of lines added
     :param _file: Entered file name
     :param _file_name: The filename without extension and CHECKED marker
     :return: The number of lines added
@@ -36,6 +36,37 @@ def lines_message(_lines: int, _file_name: str) -> str:
     if _lines == 1:
         message = f'1 line was added to {_file_name}.csv'
     print(message)
+
+
+def corrected_data(_file_name: str) -> (list, int):
+    """
+    Corrects the table data and saves it to a list, counts the number of changed cells and returns these entities
+    :param _file_name:
+    :return _data_list: Data list
+    :return _cells: The number of changed cells
+    """
+    _cells = 0
+    _data_list = []
+
+    with open(f'{file_name}.csv', newline='') as f:
+        f_reader = csv.reader(f, delimiter=',')
+        index = 0
+        for line in f_reader:
+            if index == 0:
+                _data_list.append(line)
+                index += 1
+            else:
+                new_line = []
+                for el in line:
+                    new_el = re.findall(r'\d+', el)[0]
+                    new_line.append(int(new_el))
+
+                    if len(el) != len(new_el):
+                        _cells += 1
+
+                _data_list.append(new_line)
+
+    return _data_list, _cells
 
 
 # file = input('Input file name\n')
@@ -91,3 +122,5 @@ def lines_message(_lines: int, _file_name: str) -> str:
 #
 # conn = sql.connect(f'{file_name}.s3db')
 # cursor_name = conn.cursor()
+data, cells = corrected_data('test.lll')
+print(data, cells)
