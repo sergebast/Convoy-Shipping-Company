@@ -82,6 +82,20 @@ def writer_csv(_file_name: str, _data_list: list):
             f_writer.writerow(line)
 
 
+def cells_message(_cells: int, _file_name: str):
+    """
+    Message about the number of corrected cells
+    :param _cells: The number of changed cells
+    :param _file_name: The filename without extension and CHECKED marker
+    :return: Message about the number of corrected cells
+    """
+    if _cells == 1:
+        message = f'1 cell was corrected in {_file_name}[CHECKED].csv'
+    else:
+        message = f'{_cells} cells were corrected in {_file_name}[CHECKED].csv'
+    print(message)
+
+
 # file = input('Input file name\n')
 # # file_name = ''
 #
