@@ -25,7 +25,7 @@ def xlsx_to_csv(_file: str, _file_name: str) -> int:
     return my_df.shape[0]
 
 
-def lines_message(_lines: int, _file_name: str) -> str:
+def lines_message(_lines: int, _file_name: str):
     """
     Message about the number of added lines
     :param _lines: The number of lines added
@@ -41,8 +41,8 @@ def lines_message(_lines: int, _file_name: str) -> str:
 def corrected_data(_file_name: str) -> (list, int):
     """
     Corrects the table data and saves it to a list, counts the number of changed cells and returns these entities
-    :param _file_name:
-    :return _data_list: Data list
+    :param _file_name: The filename without extension and CHECKED marker
+    :return _data_list: The clean data in list format
     :return _cells: The number of changed cells
     """
     _cells = 0
@@ -67,6 +67,19 @@ def corrected_data(_file_name: str) -> (list, int):
                 _data_list.append(new_line)
 
     return _data_list, _cells
+
+
+def writer_csv(_file_name: str, _data_list: list):
+    """
+    Writes empty data to csv file
+    :param _file_name: The filename without extension and CHECKED marker
+    :param _data_list: The clean data in list format
+    :return:
+    """
+    with open(f'{file_name}[CHECKED].csv', 'w', encoding='utf-8') as f:
+        f_writer = csv.writer(f, delimiter=',', lineterminator='\n')
+        for line in _data_list:
+            f_writer.writerow(line)
 
 
 # file = input('Input file name\n')
