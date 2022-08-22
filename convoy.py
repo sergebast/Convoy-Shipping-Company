@@ -48,7 +48,7 @@ def corrected_data(_file_name: str) -> (list, int):
     _cells = 0
     _data_list = []
 
-    with open(f'{file_name}.csv', newline='') as f:
+    with open(f'{_file_name}.csv', newline='') as f:
         f_reader = csv.reader(f, delimiter=',')
         index = 0
         for line in f_reader:
@@ -69,14 +69,14 @@ def corrected_data(_file_name: str) -> (list, int):
     return _data_list, _cells
 
 
-def writer_csv(_file_name: str, _data_list: list):
+def writer_csv(_data_list: list, _file_name: str):
     """
     Writes empty data to csv file
     :param _file_name: The filename without extension and CHECKED marker
     :param _data_list: The clean data in list format
     :return:
     """
-    with open(f'{file_name}[CHECKED].csv', 'w', encoding='utf-8') as f:
+    with open(f'{_file_name}[CHECKED].csv', 'w', encoding='utf-8') as f:
         f_writer = csv.writer(f, delimiter=',', lineterminator='\n')
         for line in _data_list:
             f_writer.writerow(line)
@@ -96,58 +96,75 @@ def cells_message(_cells: int, _file_name: str):
     print(message)
 
 
-# file = input('Input file name\n')
-# # file_name = ''
-#
-# if file.endswith('.xlsx'):
-#     file_name = file.removesuffix('.xlsx')
-#     my_df = pd.read_excel(f'{file}', sheet_name='Vehicles', dtype=str)
-#     lines = my_df.shape[0]
-#
-#     my_df.to_csv(f'{file_name}.csv', index=None, header=True)
-#
-#     if lines == 1:
-#         message = f'1 line was added to {file_name}.csv'
-#     else:
-#         message = f'{lines} lines were added to {file_name}.csv'
-#
-#     print(message)
-# else:
-#     file_name = file.removesuffix('.csv')
-#
-# _cell = 0
-# with open(f'{file_name}.csv', newline='') as f:
-#     f_reader = csv.reader(f, delimiter=',')
-#     f_checked = []
-#     index = 0
-#     for line in f_reader:
-#         if index == 0:
-#             f_checked.append(line)
-#             index += 1
-#         else:
-#             new_line = []
-#             for el in line:
-#                 new_el = re.findall(r'\d+', el)[0]
-#                 new_line.append(int(new_el))
-#
-#                 if len(el) != len(new_el):
-#                     _cell += 1
-#
-#             f_checked.append(new_line)
-#
-# with open(f'{file_name}[CHECKED].csv', 'w', encoding='utf-8') as f:
-#     f_writer = csv.writer(f, delimiter=',', lineterminator='\n')
-#     for line in f_checked:
-#         f_writer.writerow(line)
-#
-# if _cell == 1:
-#     message = f'1 cell was corrected in {file_name}[CHECKED].csv'
-# else:
-#     message = f'{_cell} cells were corrected in {file_name}[CHECKED].csv'
-#
-# print(message)
-#
-# conn = sql.connect(f'{file_name}.s3db')
-# cursor_name = conn.cursor()
-data, cells = corrected_data('test.lll')
-print(data, cells)
+def for_database(_file_name: str) -> (list, int):
+    """
+    Creates a list of tuples to add to the database and returns the number of rows of data
+    :param _file_name: The filename without extension and CHECKED marker
+    :return: List of tuples to add to the database, number of data rows
+    """
+    with open(f'{_file_name}[CHECKED].csv', newline='') as f:
+        f_reader = csv.reader(f, delimiter=',')
+        index = 0
+        data_list = []
+        for line in f_reader:
+            if index == 0:
+                index += 1
+            else:
+                data_list.append(tuple(line))
+
+    return data_list, len(data_list)
+
+
+def db_message(_rows: int, _file_name: str):
+    """
+    Reports the number of rows inserted
+    :param _rows: The number of data rows
+    :param _file_name: The filename without extension and CHECKED marker
+    :return: Message about the number of rows inserted
+    """
+    if _rows == 1:
+        message = f'1 record was inserted into {_file_name}.s3db'
+    else:
+        message = f'{_rows} records were inserted into {_file_name}.s3db'
+    print(message)
+
+
+file = input('Input file name\n')
+f_name = file_name(file)
+
+if file.count('[CHECKED]') == 0:
+    if file.endswith('.xlsx'):
+        lines = xlsx_to_csv(file, f_name)
+        lines_message(lines, f_name)
+
+    data, cells = corrected_data(f_name)
+    writer_csv(data, f_name)
+    cells_message(cells, f_name)
+
+try:
+    conn = sql.connect(f'{f_name}.s3db')
+    cur = conn.cursor()
+
+    create_table_query = '''
+    CREATE TABLE convoy(
+    'vehicle_id' INTEGER PRIMARY KEY,
+    'engine_capacity' INTEGER NOT NULL,
+    'fuel_consumption' INTEGER NOT NULL,
+    'maximum_load' INTEGER NOT NULL
+    );
+    '''
+
+    cur.execute(create_table_query)
+
+    data, number_rows = for_database(f_name)
+    cur.executemany('INSERT INTO convoy VALUES(?, ?, ?, ?)', data)
+    conn.commit()
+    db_message(number_rows, f_name)
+
+    cur.close()
+
+except sql.Error as error:
+    print("DB ERROR!!!", error)
+finally:
+    if conn:
+        conn.close()
