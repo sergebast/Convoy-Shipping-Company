@@ -14,6 +14,10 @@ mess = {
     "json": [
         '1 vehicle was saved into {}.json',
         '{} vehicles were saved into {}.json'
+    ],
+    "xml": [
+        '1 vehicle was saved into {}.xml',
+        '{} vehicles were saved into {}.xml'
     ]
 }
 

@@ -9,7 +9,8 @@ def file_name(_file: str) -> str:
     :param _file: Entered file name
     :return: File name
     """
-    return _file.removesuffix('.csv').removesuffix('.xlsx').removesuffix('[CHECKED]')
+    return _file.removesuffix('.csv').removesuffix('.xlsx').removesuffix('[CHECKED]').removesuffix(
+        '.s3db').removesuffix('.json').removesuffix('.xml')
 
 
 def xlsx_to_csv(_file: str, _file_name: str) -> int:

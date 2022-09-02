@@ -9,4 +9,5 @@ gen
 *.csv
 *.xlsx
 *.s3db
-
+*.json
+*.xml
